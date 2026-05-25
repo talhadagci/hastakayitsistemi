@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Hasta Kayıt Sistemi</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+    header{background:linear-gradient(135deg,#1e40af,#7c3aed);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+    header h1{font-size:1.3rem;font-weight:700}
+    .user-info{display:flex;align-items:center;gap:10px;font-size:.88rem}
+    .btn{padding:7px 16px;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:600;transition:.18s}
+    .btn-primary{background:#3b82f6;color:#fff}.btn-primary:hover{background:#2563eb}
+    .btn-success{background:#22c55e;color:#fff}.btn-success:hover{background:#16a34a}
+    .btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{background:#dc2626}
+    .btn-warning{background:#f59e0b;color:#fff}.btn-warning:hover{background:#d97706}
+    .btn-ghost{background:rgba(255,255,255,.1);color:#e2e8f0}.btn-ghost:hover{background:rgba(255,255,255,.2)}
+    .btn-purple{background:#7c3aed;color:#fff}.btn-purple:hover{background:#6d28d9}
+    .btn-sm{padding:4px 11px;font-size:.76rem}
+    main{padding:24px 28px;max-width:1300px;margin:0 auto}
+    .sec{font-size:.82rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+    .card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px}
+    .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+    .h-name{font-size:.98rem;font-weight:700;margin-bottom:3px}
+    .h-city{font-size:.76rem;color:#64748b;margin-bottom:12px}
+    .stats{display:flex;gap:18px}
+    .stat .val{font-size:1.4rem;font-weight:700}.stat .lbl{font-size:.66rem;color:#64748b;text-transform:uppercase}
+    .bar{background:#334155;border-radius:99px;height:5px;margin-top:10px;overflow:hidden}
+    .bar-fill{height:100%;border-radius:99px;transition:.5s}
+    .bar-low{background:#22c55e}.bar-med{background:#f59e0b}.bar-hi{background:#ef4444}
+    .chip{display:inline-block;padding:2px 9px;border-radius:99px;font-size:.72rem}
+    .chip-active{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+    .chip-inactive{background:rgba(100,116,139,.12);color:#64748b;border:1px solid #334155}
+    .chip-waiting{background:rgba(59,130,246,.12);color:#60a5fa;border:1px solid rgba(59,130,246,.3)}
+    .chip-called{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3)}
+    .chip-seen{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+    .chip-noshow{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+    .chip-inproc{background:rgba(168,85,247,.12);color:#c084fc;border:1px solid rgba(168,85,247,.3)}
+    /* Procedure buttons */
+    .proc-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+    .btn-proc{background:rgba(79,70,229,.15);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;padding:5px 12px;border-radius:7px;cursor:pointer;font-size:.78rem;font-weight:600;transition:.18s}
+    .btn-proc:hover{background:rgba(79,70,229,.3)}
+    /* InProcedure patient card */
+    .proc-card{background:#0f172a;border:1px solid rgba(168,85,247,.25);border-radius:10px;padding:12px 15px;margin-bottom:8px}
+    /* Queue number badge */
+    .q-num{display:inline-block;background:#4f46e5;color:#fff;font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:99px;min-width:36px;text-align:center}
+    /* Patient cards */
+    .pat-card{background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:13px 15px;margin-bottom:9px}
+    .pat-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px}
+    .pat-name{font-weight:700;font-size:.93rem}
+    .pat-meta{font-size:.73rem;color:#64748b;margin-top:2px}
+    .med-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:11px}
+    .med-lbl{font-size:.71rem;color:#64748b;margin-bottom:3px}
+    .med-input{width:100%;background:#1e293b;border:1px solid #334155;border-radius:7px;padding:6px 9px;color:#e2e8f0;font-size:.81rem}
+    .med-input:focus{outline:none;border-color:#4f46e5}
+    .med-input:disabled{opacity:.6;cursor:not-allowed;background:#0d1729}
+    .med-actions{display:flex;align-items:center;gap:8px;margin-top:8px}
+    .med-locked-msg{font-size:.74rem;color:#f59e0b}
+    .pat-actions{display:flex;gap:7px;flex-wrap:wrap}
+    /* Current patient banner */
+    .current-banner{background:linear-gradient(135deg,rgba(79,70,229,.15),rgba(124,58,237,.1));border:1px solid rgba(99,102,241,.4);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+    .current-banner .cb-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+    .current-banner .cb-name{font-size:1.1rem;font-weight:700}
+    /* Waiting list */
+    .wait-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0f172a;border:1px solid #1e293b;border-radius:8px;margin-bottom:6px}
+    .wait-row .wr-name{flex:1;font-size:.87rem}
+    /* Doctor click stats */
+    .doc-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:14px 16px;background:#0f172a;border:1px solid #1e293b;border-radius:10px;margin-bottom:8px}
+    /* Add patient form (triage) */
+    .triage-form{display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end}
+    .triage-form .fg{flex:1;min-width:130px}
+    .triage-form label{display:block;font-size:.76rem;color:#94a3b8;margin-bottom:4px}
+    .triage-form input,.triage-form select{width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px 11px;color:#e2e8f0;font-size:.86rem}
+    .triage-form input:focus,.triage-form select:focus{outline:none;border-color:#4f46e5}
+    .triage-form select option{background:#1e293b}
+    /* Modal */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:99}
+    .modal{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:28px;width:370px;max-width:95vw}
+    .modal h2{font-size:1.1rem;font-weight:700;margin-bottom:5px}
+    .modal p{font-size:.8rem;color:#64748b;margin-bottom:20px}
+    .fg label{display:block;font-size:.78rem;color:#94a3b8;margin-bottom:5px}
+    .fg input{width:100%;background:#0f172a;border:1px solid #334155;border-radius:7px;padding:9px 11px;color:#e2e8f0;font-size:.88rem}
+    .fg input:focus{outline:none;border-color:#4f46e5}
+    .role-tabs{display:flex;gap:7px;margin-bottom:18px}
+    .rtab{flex:1;padding:9px;background:#0f172a;border:1px solid #334155;border-radius:7px;cursor:pointer;text-align:center;font-size:.82rem;transition:.18s}
+    .rtab.active{border-color:#4f46e5;background:rgba(79,70,229,.15);color:#a5b4fc}
+    .err{color:#f87171;font-size:.78rem;min-height:17px;margin-bottom:10px}
+    .alert{padding:9px 14px;border-radius:8px;font-size:.83rem;margin-bottom:10px}
+    .alert-ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#4ade80}
+    .alert-err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#f87171}
+    .sep{height:1px;background:#1e293b;margin:20px 0}
+    .empty{text-align:center;padding:28px;color:#475569;font-size:.88rem}
+    .spin{text-align:center;padding:36px;color:#475569}
+    .stats-bar{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+    .stat-box{background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:12px 16px;text-align:center;min-width:80px}
+    .stat-box .sb-val{font-size:1.4rem;font-weight:700}
+    .stat-box .sb-lbl{font-size:.68rem;color:#64748b;text-transform:uppercase}
+    .active-doc-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+    .adc{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:99px;padding:2px 9px;font-size:.73rem;color:#4ade80}
+  </style>
+</head>
+<body>
+<header>
+  <h1>Hasta Kayıt Sistemi</h1>
+  <div class="user-info" id="hdrUser">
+    <button class="btn btn-ghost" onclick="showLogin()">Giriş Yap</button>
+  </div>
+</header>
+<main id="app"><div class="spin">Yükleniyor...</div></main>
+<div id="modal"></div>
+
+<script>
+// ─── state ───────────────────────────────────────────────────────────────────
+var user = null;
+
+// ─── api helper ──────────────────────────────────────────────────────────────
+async function api(path, opts) {
+  opts = opts || {};
+  var h = {'Content-Type':'application/json'};
+  if (user && user.token) h['Authorization'] = 'Bearer ' + user.token;
+  Object.assign(h, opts.headers || {});
+  var res = await fetch(path, Object.assign({}, opts, {headers: h}));
+  if (res.status === 204) return null;
+  var text = await res.text();
+  if (!res.ok) throw new Error(text || res.statusText);
+  return text ? JSON.parse(text) : null;
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function fmt(dt) {
+  if (!dt) return '-';
+  return new Date(dt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function fmtTime(dt) {
+  if (!dt) return '-';
+  return new Date(dt).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ─── header ──────────────────────────────────────────────────────────────────
+function updHeader() {
+  var el = document.getElementById('hdrUser');
+  if (!user) { el.innerHTML = '<button class="btn btn-ghost" onclick="showLogin()">Giriş Yap</button>'; return; }
+  var lbl = user.role==='Admin'   ? 'Yönetici — '+user.hospitalName :
+            user.role==='Doctor'  ? 'Dr. '+user.doctorName+' — '+user.hospitalName :
+                                    'Triaj — '+user.hospitalName;
+  el.innerHTML = '<span>'+lbl+'</span><button class="btn btn-ghost btn-sm" onclick="logout()">Çıkış</button>';
+}
+function logout() { user=null; updHeader(); renderPublic(); }
+
+// ─── login modal ─────────────────────────────────────────────────────────────
+function showLogin() {
+  var role = 'Admin';
+  document.getElementById('modal').innerHTML =
+    '<div class="overlay"><div class="modal">'+
+    '<h2>Giriş Yap</h2><p>Rol seçin ve bilgilerinizi girin</p>'+
+    '<div class="role-tabs">'+
+    '<div class="rtab active" id="t1" onclick="sr(\'Admin\')">Yönetici</div>'+
+    '<div class="rtab" id="t2" onclick="sr(\'Doctor\')">Doktor</div>'+
+    '<div class="rtab" id="t3" onclick="sr(\'Triage\')">Triaj</div>'+
+    '</div>'+
+    '<div class="fg" style="margin-bottom:13px"><label>Kullanıcı Adı</label><input id="lu" type="text" placeholder="Kullanıcı adı"/></div>'+
+    '<div class="fg" style="margin-bottom:13px"><label>Şifre</label><input id="lp" type="password" placeholder="Şifre" onkeydown="if(event.key===\'Enter\')doLogin()"/></div>'+
+    '<div class="err" id="le"></div>'+
+    '<button class="btn btn-primary" style="width:100%;margin-bottom:8px" onclick="doLogin()">Giriş Yap</button>'+
+    '<button class="btn btn-ghost" style="width:100%" onclick="closeModal()">İptal</button>'+
+    '</div></div>';
+
+  window.sr = function(r) {
+    role=r;
+    ['t1','t2','t3'].forEach(function(id,i){ document.getElementById(id).className='rtab'+(r===['Admin','Doctor','Triage'][i]?' active':''); });
+  };
+  window.doLogin = async function() {
+    var u=(document.getElementById('lu').value||'').trim(), p=document.getElementById('lp').value||'';
+    var e=document.getElementById('le'); e.textContent='';
+    if(!u||!p){e.textContent='Alanları doldurun.';return;}
+    var ep = role==='Admin'?'/api/auth/admin/login': role==='Doctor'?'/api/auth/doctor/login':'/api/auth/triage/login';
+    try{
+      user = await api(ep,{method:'POST',body:JSON.stringify({username:u,password:p})});
+      closeModal(); updHeader();
+      if(user.role==='Admin') renderAdmin();
+      else if(user.role==='Doctor') renderDoctor();
+      else renderTriage();
+    }catch(err){e.textContent='Kullanıcı adı veya şifre hatalı.';}
+  };
+}
+function closeModal(){ document.getElementById('modal').innerHTML=''; }
+
+// ─── PUBLIC VIEW ─────────────────────────────────────────────────────────────
+async function renderPublic() {
+  document.getElementById('app').innerHTML='<div class="spin">Yükleniyor...</div>';
+  try {
+    var hospitals = await api('/api/hospitals');
+    var densities = await api('/api/density').catch(function(){return [];});
+    var dm={};
+    (densities||[]).forEach(function(d){dm[d.hospitalId]=d;});
+
+    var docsByH={}, patsByH={};
+    await Promise.all((hospitals||[]).map(async function(h){
+      try{
+        var docs=await api('/api/doctors/hospital/'+h.hospitalId);
+        docsByH[h.hospitalId]=(docs||[]).filter(function(d){return d.isActiveToday;});
+      }catch(e){docsByH[h.hospitalId]=[];}
+      try{
+        var pats=await api('/api/patients/hospital/'+h.hospitalId);
+        patsByH[h.hospitalId]=pats||[];
+      }catch(e){patsByH[h.hospitalId]=[];}
+    }));
+
+    var html='<div class="sec">Hastaneler</div><div class="grid3">';
+    (hospitals||[]).forEach(function(h){
+      var d=dm[h.hospitalId]||{};
+      var pats=patsByH[h.hospitalId]||[];
+      var bekleyen=pats.filter(function(p){return p.queueStatus==='Waiting';}).length;
+      var aktif=pats.filter(function(p){return p.queueStatus==='Called'||p.queueStatus==='InProcedure';}).length;
+      var toplam=bekleyen+aktif;
+      var cap=d.capacity||50;
+      var pct=Math.round(toplam/cap*100);
+      var bc=pct<50?'bar-low':pct<80?'bar-med':'bar-hi';
+      var docs=docsByH[h.hospitalId]||[];
+      var chips=docs.length?docs.map(function(doc){return '<span class="adc">Dr.'+doc.name+' '+doc.surname+'</span>';}).join('')
+        :'<span style="color:#475569;font-size:.73rem">Aktif doktor yok</span>';
+      html+='<div class="card" style="transition:.2s">'
+        +'<div class="h-name">'+h.name+'</div>'
+        +'<div class="h-city">'+h.city+'</div>'
+        +'<div class="stats">'
+        +'<div class="stat"><div class="val" style="color:#60a5fa">'+bekleyen+'</div><div class="lbl">Bekleyen</div></div>'
+        +'<div class="stat"><div class="val" style="color:#c084fc">'+aktif+'</div><div class="lbl">Tedavide</div></div>'
+        +'<div class="stat"><div class="val">'+cap+'</div><div class="lbl">Kapasite</div></div>'
+        +'<div class="stat"><div class="val">'+pct+'%</div><div class="lbl">Doluluk</div></div>'
+        +'</div>'
+        +'<div class="bar"><div class="bar-fill '+bc+'" style="width:'+Math.min(pct,100)+'%"></div></div>'
+        +'<div style="margin-top:12px"><div style="font-size:.71rem;color:#94a3b8;margin-bottom:5px">Bugün Aktif Doktorlar</div>'
+        +'<div class="active-doc-chips">'+chips+'</div></div>'
+        +'</div>';
+    });
+    html+='</div>';
+    document.getElementById('app').innerHTML=html;
+  } catch(e){
+    document.getElementById('app').innerHTML='<div class="empty">Veriler yüklenemedi.</div>';
+  }
+}
+
+// ─── TRIAGE VIEW ─────────────────────────────────────────────────────────────
+async function renderTriage() {
+  document.getElementById('app').innerHTML='<div class="spin">Yükleniyor...</div>';
+  try {
+    var doctors = await api('/api/doctors/hospital/'+user.hospitalId);
+    var activeDocs = (doctors||[]).filter(function(d){return d.isActiveToday;});
+    buildTriageView(activeDocs);
+  } catch(e){
+    document.getElementById('app').innerHTML='<div class="empty">Yüklenemedi: '+e.message+'</div>';
+  }
+}
+
+function buildTriageView(activeDocs) {
+  var docOpts = activeDocs.map(function(d){return '<option value="'+d.doctorId+'">Dr. '+d.name+' '+d.surname+' ('+d.specialty+')</option>';}).join('');
+  var html='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px">'
+    +'<div class="sec" style="margin:0">Triaj — '+user.hospitalName+'</div>'
+    +'<button class="btn btn-ghost btn-sm" onclick="renderTriage()">↻ Yenile</button>'
+    +'</div>'
+    +'<div class="card" style="margin-bottom:18px">'
+    +'<div style="font-weight:600;margin-bottom:14px">Hasta Kayıt</div>'
+    +(activeDocs.length===0?'<div class="alert alert-err">Bugün aktif doktor yok. Yönetici panelinden doktor aktif edilmeli.</div>':'')
+    +'<div class="triage-form">'
+    +'<div class="fg"><label>Ad</label><input id="tName" type="text" placeholder="Hasta adı"/></div>'
+    +'<div class="fg"><label>Soyad</label><input id="tSurname" type="text" placeholder="Hasta soyadı"/></div>'
+    +'<div class="fg" style="min-width:200px"><label>Doktor</label><select id="tDoc">'+docOpts+'</select></div>'
+    +'<button class="btn btn-success" onclick="triageRegister()">Kayıt Et</button>'
+    +'</div>'
+    +'<div id="triageAlert" style="margin-top:10px"></div>'
+    +'</div>'
+    +'<div class="sec">Bugünün Kuyruğu</div>'
+    +'<div id="triageQueue"><div class="spin">Yükleniyor...</div></div>';
+  document.getElementById('app').innerHTML=html;
+  loadTriageQueue();
+}
+
+async function loadTriageQueue() {
+  try {
+    var patients = await api('/api/patients/hospital/'+user.hospitalId);
+    var queued = (patients||[]).filter(function(p){return p.queueNumber&&p.queueStatus!=='None';});
+    queued.sort(function(a,b){return (a.queueNumber||0)-(b.queueNumber||0);});
+    if(!queued.length){document.getElementById('triageQueue').innerHTML='<div class="empty">Bugün henüz hasta kaydı yok.</div>';return;}
+    var html='';
+    queued.forEach(function(p){
+      var sc=p.queueStatus==='Waiting'?'chip-waiting':p.queueStatus==='Called'?'chip-called':p.queueStatus==='Seen'?'chip-seen':p.queueStatus==='InProcedure'?'chip-inproc':'chip-noshow';
+      var st=p.queueStatus==='Waiting'?'Bekliyor':p.queueStatus==='Called'?'Çağrıldı':p.queueStatus==='Seen'?'Görüldü':p.queueStatus==='InProcedure'?'Tedavide':'Gelmedi';
+      html+='<div class="wait-row">'
+        +'<span class="q-num">#'+p.queueNumber+'</span>'
+        +'<span class="wr-name"><strong>'+p.name+' '+p.surname+'</strong></span>'
+        +'<span class="chip '+sc+'">'+st+'</span>'
+        +'<span style="font-size:.72rem;color:#64748b">'+fmtTime(p.queuedAt)+'</span>'
+        +'</div>';
+    });
+    document.getElementById('triageQueue').innerHTML=html;
+  } catch(e){document.getElementById('triageQueue').innerHTML='<div class="empty">Yüklenemedi.</div>';}
+}
+
+async function triageRegister() {
+  var name=(document.getElementById('tName').value||'').trim();
+  var surname=(document.getElementById('tSurname').value||'').trim();
+  var docEl=document.getElementById('tDoc');
+  var alertEl=document.getElementById('triageAlert');
+  alertEl.innerHTML='';
+  if(!name||!surname){alertEl.innerHTML='<div class="alert alert-err">Ad ve soyad boş olamaz.</div>';return;}
+  if(name.length<2){alertEl.innerHTML='<div class="alert alert-err">Ad en az 2 karakter olmalıdır.</div>';return;}
+  if(surname.length<2){alertEl.innerHTML='<div class="alert alert-err">Soyad en az 2 karakter olmalıdır.</div>';return;}
+  var letterOnly=/^[\p{L} \-']+$/u;
+  if(!letterOnly.test(name)){alertEl.innerHTML='<div class="alert alert-err">Ad yalnızca harf içerebilir, rakam olamaz.</div>';return;}
+  if(!letterOnly.test(surname)){alertEl.innerHTML='<div class="alert alert-err">Soyad yalnızca harf içerebilir, rakam olamaz.</div>';return;}
+  if(!docEl||!docEl.value){alertEl.innerHTML='<div class="alert alert-err">Doktor seçin.</div>';return;}
+  try{
+    var p=await api('/api/patients/triage',{method:'POST',body:JSON.stringify({name:name,surname:surname,doctorId:parseInt(docEl.value)})});
+    document.getElementById('tName').value='';
+    document.getElementById('tSurname').value='';
+    alertEl.innerHTML='<div class="alert alert-ok">✓ Sıra No: <strong>#'+p.queueNumber+'</strong> — Kayıt tamamlandı.</div>';
+    setTimeout(function(){alertEl.innerHTML='';},3500);
+    loadTriageQueue();
+  }catch(e){alertEl.innerHTML='<div class="alert alert-err">Hata: '+e.message+'</div>';}
+}
+
+// ─── DOCTOR VIEW ─────────────────────────────────────────────────────────────
+var todayPatients=[];
+
+async function renderDoctor() {
+  document.getElementById('app').innerHTML='<div class="spin">Yükleniyor...</div>';
+  try {
+    todayPatients = await api('/api/patients/doctor/'+user.doctorId+'/today');
+    buildDoctorView();
+  }catch(e){document.getElementById('app').innerHTML='<div class="empty">Yüklenemedi: '+e.message+'</div>';}
+}
+
+function buildDoctorView() {
+  var called   = (todayPatients||[]).filter(function(p){return p.queueStatus==='Called';});
+  var inProc   = (todayPatients||[]).filter(function(p){return p.queueStatus==='InProcedure';});
+  var waiting  = (todayPatients||[]).filter(function(p){return p.queueStatus==='Waiting';}).sort(function(a,b){return new Date(a.queuedAt)-new Date(b.queuedAt);});
+  var seen     = (todayPatients||[]).filter(function(p){return p.queueStatus==='Seen';});
+  var noShows  = (todayPatients||[]).filter(function(p){return p.queueStatus==='NoShow';});
+
+  var cur = called.length ? called[0] : null;
+
+  // Current patient banner
+  var curHtml='';
+  if(cur){
+    var locked=cur.isMedicalLocked;
+    var hasCompletedProc=(cur.procedures||[]).some(function(pr){return pr.isCompleted;});
+    var canNoShow=!locked&&!hasCompletedProc;
+    var nosho3=cur.noShowCount>=2; // already been no-showed twice, one more = permanent
+    curHtml='<div class="current-banner">'
+      +'<div class="cb-top">'
+      +'<div>'
+      +'<div style="font-size:.72rem;color:#a5b4fc;margin-bottom:4px">ŞU ANKİ HASTA</div>'
+      +'<span class="q-num" style="margin-right:10px">#'+cur.queueNumber+'</span>'
+      +'<span class="cb-name">'+cur.name+' '+cur.surname+'</span>'
+      +(cur.noShowCount>0?'<span style="font-size:.72rem;color:#f59e0b;margin-left:8px">Gelmemişti: '+cur.noShowCount+'×</span>':'')
+      +'</div>'
+      +(!canNoShow
+        ?'<span style="font-size:.72rem;color:#64748b;padding:4px 8px;border:1px solid #334155;border-radius:6px">'+(locked?'Tıbbi kayıt girildi':'Tedavi gördü')+'</span>'
+        :'<button class="btn btn-warning btn-sm" onclick="noShow(\''+cur.patientId+'\')">'+(nosho3?'⚠ Gelmedi (Son Hak)':'Hasta Gelmedi')+'</button>')
+      +'</div>'
+      +'<div style="font-size:.73rem;color:#64748b;margin-bottom:10px">Kabul: '+fmt(cur.admittedAt)+'</div>'
+      +'<hr style="border:none;border-top:1px solid rgba(99,102,241,.2);margin:8px 0 12px">'
+      +'<div class="med-grid">'
+      +'<div><div class="med-lbl">Teşhis</div><input class="med-input" id="diag-'+cur.patientId+'" value="'+esc(cur.diagnosis||'')+'" placeholder="Teşhis..."'+(locked?' disabled':'')+'/></div>'
+      +'<div><div class="med-lbl">İlaç</div><input class="med-input" id="meds-'+cur.patientId+'" value="'+esc(cur.medications||'')+'" placeholder="İlaç adı..."'+(locked?' disabled':'')+'/></div>'
+      +'</div>'
+      +'<div class="med-actions">'
+      +(locked
+        ?'<span class="med-locked-msg">⚠ Tıbbi kayıt kilitlendi — tekrar düzenlenemez</span>'
+          +'<button class="btn btn-success btn-sm" onclick="discharge(\''+cur.patientId+'\')">✓ Taburcu Et</button>'
+        :'<button class="btn btn-primary btn-sm" onclick="saveMedical(\''+cur.patientId+'\')">Kaydet</button>'
+          +'<span id="ms-'+cur.patientId+'" style="font-size:.75rem;color:#22c55e"></span>'
+          +'<button class="btn btn-success btn-sm" onclick="discharge(\''+cur.patientId+'\')">✓ Taburcu Et</button>')
+      +'</div>'
+      +'<hr style="border:none;border-top:1px solid rgba(99,102,241,.15);margin:10px 0 8px">'
+      +'<div style="font-size:.71rem;color:#94a3b8;margin-bottom:6px">Tedaviye Gönder</div>'
+      +'<div class="proc-btns">'
+      +'<button class="btn-proc" onclick="sendProcedure(\''+cur.patientId+'\',\'Röntgen\')">🩻 Röntgen</button>'
+      +'<button class="btn-proc" onclick="sendProcedure(\''+cur.patientId+'\',\'İğne\')">💉 İğne</button>'
+      +'<button class="btn-proc" onclick="sendProcedure(\''+cur.patientId+'\',\'Serum\')">🩸 Serum</button>'
+      +'<button class="btn-proc" onclick="sendProcedure(\''+cur.patientId+'\',\'Kan Tahlili\')">🔬 Kan Tahlili</button>'
+      +'<button class="btn-proc" onclick="sendProcedureCustom(\''+cur.patientId+'\')">+ Diğer</button>'
+      +'</div>'
+      +(cur.procedures&&cur.procedures.length?'<div style="margin-top:8px;font-size:.72rem;color:#64748b">Geçmiş: '
+        +cur.procedures.map(function(pr){return (pr.isCompleted?'✓ ':'⏳ ')+pr.type+(pr.notes?' ('+pr.notes+')':'');}).join(' · ')
+        +'</div>':'')
+      +'</div>';
+  } else if(waiting.length){
+    curHtml='<div class="card" style="margin-bottom:16px;text-align:center;padding:20px">'
+      +'<div style="color:#94a3b8;margin-bottom:12px">Şu an aktif hasta yok</div>'
+      +'<button class="btn btn-primary" onclick="callNext()">▶ Sıradaki Hastayı Çağır <span class="q-num" style="margin-left:6px">#'+waiting[0].queueNumber+'</span></button>'
+      +'</div>';
+  } else {
+    curHtml='<div class="card" style="margin-bottom:16px;text-align:center;padding:20px;color:#475569">Bekleyen hasta yok</div>';
+  }
+
+  // Waiting list
+  var waitHtml=waiting.length?waiting.map(function(p){
+    return '<div class="wait-row">'
+      +'<span class="q-num">#'+p.queueNumber+'</span>'
+      +'<span class="wr-name">'+p.name+' '+p.surname+'</span>'
+      +(p.noShowCount>0?'<span style="font-size:.72rem;color:#f59e0b">'+p.noShowCount+'× gelmedi</span>':'')
+      +'<span class="chip chip-waiting">Bekliyor</span>'
+      +'<span style="font-size:.71rem;color:#64748b">'+fmtTime(p.queuedAt)+'</span>'
+      +'</div>';
+  }).join(''):'<div class="empty" style="padding:14px">Sırada bekleyen hasta yok</div>';
+
+  // Seen patients
+  var seenHtml=seen.length?seen.map(function(p){
+    return '<div class="pat-card">'
+      +'<div class="pat-header"><div>'
+      +'<span class="q-num" style="margin-right:8px">#'+p.queueNumber+'</span>'
+      +'<span class="pat-name">'+p.name+' '+p.surname+'</span>'
+      +'</div><span class="chip chip-seen">Taburcu</span></div>'
+      +(p.diagnosis?'<div style="font-size:.78rem;color:#94a3b8;margin-top:5px">Teşhis: '+p.diagnosis+'</div>':'')
+      +(p.medications?'<div style="font-size:.78rem;color:#94a3b8">İlaç: '+p.medications+'</div>':'')
+      +'<div class="pat-meta">Taburcu: '+fmtTime(p.dischargedAt)+'</div>'
+      +'</div>';
+  }).join(''):'';
+
+  // NoShow patients
+  var nsHtml=noShows.length?noShows.map(function(p){
+    return '<div class="pat-card">'
+      +'<div class="pat-header"><div>'
+      +'<span class="q-num" style="margin-right:8px;background:#64748b">#'+p.queueNumber+'</span>'
+      +'<span class="pat-name" style="opacity:.7">'+p.name+' '+p.surname+'</span>'
+      +'</div><span class="chip chip-noshow">3× Gelmedi</span></div>'
+      +'</div>';
+  }).join(''):'';
+
+  // InProcedure patients section
+  var procHtml = inProc.length ? inProc.map(function(p) {
+    var activeProcedures = (p.procedures||[]).filter(function(pr){return !pr.isCompleted;});
+    var procTypes = activeProcedures.map(function(pr){return pr.type+(pr.notes?' ('+pr.notes+')':'');}).join(', ');
+    return '<div class="proc-card">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
+      +'<div>'
+      +'<span class="q-num" style="margin-right:8px;background:#7c3aed">#'+p.queueNumber+'</span>'
+      +'<span style="font-weight:700">'+p.name+' '+p.surname+'</span>'
+      +'<span class="chip chip-inproc" style="margin-left:8px">Tedavide</span>'
+      +'</div>'
+      +'<button class="btn btn-primary btn-sm" onclick="returnFromProcedure(\''+p.patientId+'\')">↩ Geri Döndü</button>'
+      +'</div>'
+      +(procTypes?'<div style="font-size:.76rem;color:#c084fc;margin-top:6px">⏳ '+procTypes+'</div>':'')
+      +'</div>';
+  }).join('') : '';
+
+  document.getElementById('app').innerHTML=
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">'
+    +'<div class="sec" style="margin:0">Dr. '+user.doctorName+' — Hasta Paneli</div>'
+    +'<div class="stats-bar" style="margin:0">'
+    +'<div class="stat-box"><div class="sb-val" style="color:#fbbf24">'+(cur?1:0)+'</div><div class="sb-lbl">Muayene</div></div>'
+    +(inProc.length?'<div class="stat-box"><div class="sb-val" style="color:#c084fc">'+inProc.length+'</div><div class="sb-lbl">Tedavide</div></div>':'')
+    +'<div class="stat-box"><div class="sb-val" style="color:#60a5fa">'+waiting.length+'</div><div class="sb-lbl">Bekleyen</div></div>'
+    +'<div class="stat-box"><div class="sb-val" style="color:#4ade80">'+seen.length+'</div><div class="sb-lbl">Taburcu</div></div>'
+    +(noShows.length?'<div class="stat-box"><div class="sb-val" style="color:#f87171">'+noShows.length+'</div><div class="sb-lbl">Gelmedi</div></div>':'')
+    +'<button class="btn btn-ghost btn-sm" onclick="renderDoctor()">↻</button>'
+    +'</div>'
+    +'</div>'
+    +curHtml
+    +(inProc.length?'<div class="sec">Tedavide ('+inProc.length+')</div>'+procHtml:'')
+    +'<div class="sec">Bekleyen Hastalar ('+waiting.length+')</div>'
+    +waitHtml
+    +(seen.length?'<div class="sep"></div><div class="sec">Bugün Taburcu Edilenler ('+seen.length+')</div>'+seenHtml:'')
+    +(noShows.length?'<div class="sep"></div><div class="sec">Gelmeyenler</div>'+nsHtml:'');
+}
+
+async function discharge(pid) {
+  if(!confirm('Hastayı taburcu etmek istiyor musunuz?')) return;
+  try{
+    var res=await api('/api/patients/'+pid+'/discharge',{method:'PUT'});
+    todayPatients=await api('/api/patients/doctor/'+user.doctorId+'/today');
+    buildDoctorView();
+    if(res.nextCalled) showToast('▶ Sıradaki hasta çağrıldı: #'+res.nextCalled.queueNumber+' — '+res.nextCalled.name+' '+res.nextCalled.surname);
+    else showToast('✓ Taburcu edildi. Bekleyen hasta yok.');
+  }catch(e){alert('Hata: '+e.message);}
+}
+
+async function noShow(pid) {
+  try{
+    var res=await api('/api/patients/'+pid+'/noshow',{method:'PUT'});
+    todayPatients=await api('/api/patients/doctor/'+user.doctorId+'/today');
+    buildDoctorView();
+    var act=res.actioned;
+    if(act.queueStatus==='NoShow') showToast('⚠ Hasta 3 kez gelmedi — kalıcı olarak "Gelmedi" işaretlendi.');
+    else showToast('Hasta bekleme sırasının sonuna alındı. ('+act.noShowCount+'. kez)');
+    if(res.nextCalled) showToast('▶ Sıradaki hasta çağrıldı: #'+res.nextCalled.queueNumber+' — '+res.nextCalled.name+' '+res.nextCalled.surname);
+  }catch(e){alert('Hata: '+e.message);}
+}
+
+async function callNext() {
+  try{
+    var res=await api('/api/patients/queue/doctor/'+user.doctorId+'/call-next',{method:'PUT'});
+    if(res.nextCalled){
+      todayPatients=await api('/api/patients/doctor/'+user.doctorId+'/today');
+      buildDoctorView();
+      showToast('▶ Çağrıldı: #'+res.nextCalled.queueNumber+' — '+res.nextCalled.name+' '+res.nextCalled.surname);
+    }
+  }catch(e){alert('Hata: '+e.message);}
+}
+
+async function saveMedical(pid) {
+  var diag=document.getElementById('diag-'+pid).value;
+  var meds=document.getElementById('meds-'+pid).value;
+  var st=document.getElementById('ms-'+pid);
+  try{
+    await api('/api/patients/'+pid+'/medical',{method:'PUT',body:JSON.stringify({diagnosis:diag,medications:meds})});
+    st.textContent='✓ Kaydedildi';
+    setTimeout(function(){renderDoctor();},800);
+  }catch(e){
+    try{var msg=JSON.parse(e.message).message||e.message;st.style.color='#f87171';st.textContent=msg;}
+    catch(_){st.style.color='#f87171';st.textContent=e.message;}
+  }
+}
+
+async function sendProcedure(pid, type) {
+  try{
+    var res=await api('/api/patients/'+pid+'/procedure',{method:'POST',body:JSON.stringify({procedureType:type,notes:null})});
+    todayPatients=await api('/api/patients/doctor/'+user.doctorId+'/today');
+    buildDoctorView();
+    showToast('🩺 '+type+' için gönderildi.');
+    if(res.nextCalled) showToast('▶ Sıradaki hasta çağrıldı: #'+res.nextCalled.queueNumber+' — '+res.nextCalled.name+' '+res.nextCalled.surname);
+    else showToast('Bekleyen hasta yok, sıra boş.');
+  }catch(e){
+    try{alert(JSON.parse(e.message).message||e.message);}catch(_){alert(e.message);}
+  }
+}
+
+function sendProcedureCustom(pid) {
+  document.getElementById('modal').innerHTML=
+    '<div class="overlay"><div class="modal">'
+    +'<h2>Tedaviye Gönder</h2><p>Tedavi türü ve notları girin</p>'
+    +'<div class="fg" style="margin-bottom:13px"><label>Tedavi Türü</label>'
+    +'<input id="ptType" type="text" placeholder="Örn: MRI, Enjeksiyon..."/></div>'
+    +'<div class="fg" style="margin-bottom:13px"><label>Not (İsteğe bağlı)</label>'
+    +'<input id="ptNotes" type="text" placeholder="Örn: Sol akciğer PA grafi..."/></div>'
+    +'<div class="err" id="pte"></div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<button class="btn btn-primary" style="flex:1" onclick="submitCustomProc(\''+pid+'\')">Gönder</button>'
+    +'<button class="btn btn-ghost" onclick="closeModal()">İptal</button>'
+    +'</div></div></div>';
+
+  window.submitCustomProc=async function(p){
+    var t=(document.getElementById('ptType').value||'').trim();
+    var n=(document.getElementById('ptNotes').value||'').trim()||null;
+    var e=document.getElementById('pte');e.textContent='';
+    if(!t){e.textContent='Tedavi türü zorunludur.';return;}
+    closeModal();
+    await sendProcedureWithNotes(p,t,n);
+  };
+}
+
+async function sendProcedureWithNotes(pid, type, notes) {
+  try{
+    var res=await api('/api/patients/'+pid+'/procedure',{method:'POST',body:JSON.stringify({procedureType:type,notes:notes})});
+    todayPatients=await api('/api/patients/doctor/'+user.doctorId+'/today');
+    buildDoctorView();
+    showToast('🩺 '+type+' için gönderildi.');
+    if(res.nextCalled) showToast('▶ Sıradaki hasta çağrıldı: #'+res.nextCalled.queueNumber+' — '+res.nextCalled.name+' '+res.nextCalled.surname);
+  }catch(e){
+    try{alert(JSON.parse(e.message).message||e.message);}catch(_){alert(e.message);}
+  }
+}
+
+async function returnFromProcedure(pid) {
+  try{
+    var p=await api('/api/patients/'+pid+'/return',{method:'PUT'});
+    todayPatients=await api('/api/patients/doctor/'+user.doctorId+'/today');
+    buildDoctorView();
+    if(p.queueStatus==='Called') showToast('↩ Hasta muayeneye alındı: '+p.name+' '+p.surname);
+    else showToast('↩ Hasta geri döndü, sıranın başına alındı: #'+p.queueNumber+' '+p.name+' '+p.surname);
+  }catch(e){
+    try{alert(JSON.parse(e.message).message||e.message);}catch(_){alert(e.message);}
+  }
+}
+
+function showToast(msg) {
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1e40af;color:#fff;padding:12px 20px;border-radius:10px;font-size:.85rem;z-index:999;max-width:340px;box-shadow:0 4px 20px rgba(0,0,0,.4)';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(function(){document.body.removeChild(t);},4000);
+}
+
+// ─── ADMIN VIEW ───────────────────────────────────────────────────────────────
+async function renderAdmin() {
+  document.getElementById('app').innerHTML='<div class="spin">Yükleniyor...</div>';
+  try{
+    var doctors  = await api('/api/doctors/hospital/'+user.hospitalId);
+    var patients = await api('/api/patients/hospital/'+user.hospitalId);
+    var pByDoc={};
+    (patients||[]).forEach(function(p){var k=p.doctorId||0;if(!pByDoc[k])pByDoc[k]=[];pByDoc[k].push(p);});
+    buildAdminView(doctors||[], pByDoc);
+  }catch(e){document.getElementById('app').innerHTML='<div class="empty">Yüklenemedi: '+e.message+'</div>';}
+}
+
+function buildAdminView(doctors, pByDoc) {
+  var rows=doctors.map(function(d){
+    var mp=pByDoc[d.doctorId]||[];
+    var ac=d.isActiveToday, btnTxt=ac?'Pasife Al':'Aktife Al', btnCls=ac?'btn-warning':'btn-success';
+    var nc=d.hasCredentials?'':'<span style="font-size:.7rem;color:#f59e0b;margin-left:6px">⚠ Giriş yok</span>';
+    return '<div class="doc-row">'
+      +'<div>'
+      +'<div style="font-weight:700">Dr. '+d.name+' '+d.surname+nc+'</div>'
+      +'<div style="font-size:.75rem;color:#64748b">'+d.specialty+'</div>'
+      +'<span class="chip '+(ac?'chip-active':'chip-inactive')+'" style="margin-top:4px">'+(ac?'Aktif':'Pasif')+'</span>'
+      +'</div>'
+      +'<div class="pat-actions">'
+      +'<button class="btn btn-ghost btn-sm" onclick="showCredModal('+d.doctorId+',\''+d.name+' '+d.surname+'\')">Giriş Tanımla</button>'
+      +'<button class="btn btn-primary btn-sm" onclick="showDoctorStats('+d.doctorId+',\''+d.name+' '+d.surname+'\')">Günlük İstatistik</button>'
+      +'<button class="btn '+btnCls+' btn-sm" onclick="toggleActive('+d.doctorId+')">'+btnTxt+'</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+
+  document.getElementById('app').innerHTML=
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">'
+    +'<div class="sec" style="margin:0">'+user.hospitalName+' — Yönetici Paneli</div>'
+    +'<button class="btn btn-ghost btn-sm" onclick="renderAdmin()">↻ Yenile</button>'
+    +'</div>'
+    +(rows||'<div class="empty">Doktor bulunamadı.</div>');
+}
+
+async function toggleActive(id) {
+  try{await api('/api/doctors/'+id+'/toggle-active',{method:'PUT'});renderAdmin();}
+  catch(e){alert('Hata: '+e.message);}
+}
+
+function showCredModal(id,name) {
+  document.getElementById('modal').innerHTML=
+    '<div class="overlay"><div class="modal">'
+    +'<h2>Giriş Bilgileri</h2><p>Dr. '+name+'</p>'
+    +'<div class="fg" style="margin-bottom:13px"><label>Kullanıcı Adı</label><input id="cu" type="text"/></div>'
+    +'<div class="fg" style="margin-bottom:13px"><label>Şifre (min 6 karakter)</label><input id="cp" type="password"/></div>'
+    +'<div class="err" id="ce"></div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<button class="btn btn-primary" style="flex:1" onclick="saveCred('+id+')">Kaydet</button>'
+    +'<button class="btn btn-ghost" onclick="closeModal()">İptal</button>'
+    +'</div></div></div>';
+
+  window.saveCred=async function(did){
+    var u=(document.getElementById('cu').value||'').trim(),p=document.getElementById('cp').value||'';
+    var e=document.getElementById('ce');e.textContent='';
+    if(!u||!p){e.textContent='Doldurun.';return;}
+    if(p.length<6){e.textContent='Şifre en az 6 karakter.';return;}
+    try{await api('/api/doctors/'+did+'/credentials',{method:'PUT',body:JSON.stringify({username:u,password:p})});
+      closeModal();renderAdmin();}
+    catch(err){try{e.textContent=JSON.parse(err.message).message||err.message;}catch(_){e.textContent=err.message;}}
+  };
+}
+
+async function showDoctorStats(docId, docName) {
+  document.getElementById('modal').innerHTML=
+    '<div class="overlay"><div class="modal" style="width:520px;max-width:98vw">'
+    +'<h2>'+docName+' — Günlük</h2><p>Bugünün hasta istatistikleri</p>'
+    +'<div id="statsBody"><div class="spin">Yükleniyor...</div></div>'
+    +'<div style="margin-top:16px"><button class="btn btn-ghost" style="width:100%" onclick="closeModal()">Kapat</button></div>'
+    +'</div></div>';
+
+  try{
+    var data=await api('/api/patients/admin/doctor/'+docId+'/daily');
+    var rows=(data.patients||[]).map(function(p){
+      var sc=p.queueStatus==='Waiting'?'chip-waiting':p.queueStatus==='Called'?'chip-called':p.queueStatus==='Seen'?'chip-seen':p.queueStatus==='InProcedure'?'chip-inproc':'chip-noshow';
+      var st=p.queueStatus==='Waiting'?'Bekliyor':p.queueStatus==='Called'?'Muayenede':p.queueStatus==='Seen'?'Taburcu':p.queueStatus==='InProcedure'?'Tedavide':'Gelmedi';
+      return '<div style="background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:10px 12px;margin-bottom:7px">'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+        +'<span class="q-num">#'+p.queueNumber+'</span>'
+        +'<strong>'+p.name+' '+p.surname+'</strong>'
+        +'<span class="chip '+sc+'">'+st+'</span>'
+        +'</div>'
+        +(p.diagnosis?'<div style="font-size:.78rem;color:#94a3b8;margin-top:5px">Teşhis: '+p.diagnosis+'</div>':'')
+        +(p.medications?'<div style="font-size:.78rem;color:#94a3b8">İlaç: '+p.medications+'</div>':'')
+        +'</div>';
+    }).join('');
+
+    var sb=document.getElementById('statsBody');
+    sb.innerHTML='<div class="stats-bar" style="margin-bottom:14px">'
+      +'<div class="stat-box"><div class="sb-val">'+data.total+'</div><div class="sb-lbl">Toplam</div></div>'
+      +'<div class="stat-box"><div class="sb-val" style="color:#4ade80">'+data.seen+'</div><div class="sb-lbl">Taburcu</div></div>'
+      +'<div class="stat-box"><div class="sb-val" style="color:#60a5fa">'+data.waiting+'</div><div class="sb-lbl">Bekleyen</div></div>'
+      +(data.inProcedure?'<div class="stat-box"><div class="sb-val" style="color:#c084fc">'+data.inProcedure+'</div><div class="sb-lbl">Tedavide</div></div>':'')
+      +'<div class="stat-box"><div class="sb-val" style="color:#f87171">'+data.noShow+'</div><div class="sb-lbl">Gelmedi</div></div>'
+      +'</div>'
+      +(rows||'<div class="empty" style="padding:14px">Bugün kayıt yok.</div>');
+  }catch(e){document.getElementById('statsBody').innerHTML='<div class="empty">Yüklenemedi.</div>';}
+}
+
+// ─── init ─────────────────────────────────────────────────────────────────────
+updHeader();
+renderPublic();
+</script>
+</body>
+</html>
